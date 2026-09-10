@@ -32,29 +32,35 @@ jobs:
 
       - name: Inject Tauri v2 Config
         run: |
-          node -e "
-            const fs = require('fs');
-            const file = 'src-tauri/tauri.conf.json';
-            if (fs.existsSync(file)) {
-              const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-              data.productName = 'EnglishTeacher';
-              data.version = '1.0.0';
-              if (!data.package) data.package = {};
-              data.package.productName = 'EnglishTeacher';
-              data.package.version = '1.0.0';
-              fs.writeFileSync(file, JSON.stringify(data, null, 2));
-              console.log('Configuração injetada com sucesso!');
-            }
-          "
+          $configFiles = Get-ChildItem -Recurse -Filter "tauri.conf.json" -Exclude "node_modules"
+          foreach ($file in $configFiles) {
+            Write-Host "Atualizando: $($file.FullName)"
+            $json = Get-Content $file.FullName -Raw | ConvertFrom-Json
+            $json.productName = "EnglishTeacher"
+            $json.version = "1.0.0"
+            if (-not $json.package) { $json.package = @{} }
+            $json.package.productName = "EnglishTeacher"
+            $json.package.version = "1.0.0"
+            $json | ConvertTo-Json -Depth 10 | Set-Content $file.FullName
+          }
 
       - name: Build Tauri Executable
-        run: npx tauri build
+        run: |
+          $config = Get-ChildItem -Recurse -Filter "tauri.conf.json" -Exclude "node_modules" | Select-Object -First 1
+          if ($config) {
+            $tauriDir = $config.Directory.FullName
+            Write-Host "Entrando na pasta: $tauriDir"
+            Set-Location $tauriDir
+            npx tauri build
+          } else {
+            throw "tauri.conf.json nao encontrado!"
+          }
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: EnglishTeacher-Windows-Setup
           path: |
-            src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/*.exe
+            **/target/release/bundle/nsis/*.exe
+            **/target/release/bundle/msi/*.msi
+            **/target/release/*.exe
