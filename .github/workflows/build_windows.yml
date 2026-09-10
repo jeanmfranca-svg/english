@@ -6,10 +6,11 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
-    permissions:
-      contents: write
     runs-on: windows-latest
 
     steps:
@@ -29,9 +30,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Frontend Assets
-        run: npm run build
-
       - name: Build Desktop Executable & Create Release (Tauri v2)
         uses: tauri-apps/tauri-action@v0
         env:
@@ -39,6 +37,6 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'The English Teacher v2.0 Native Windows'
-          releaseBody: 'Instalador nativo Windows (.exe) com engine em Rust e banco SQLite3 local.'
+          releaseBody: 'Instalador nativo Windows (.exe) com engine em Rust e banco de dados SQLite3 local.'
           releaseDraft: false
           prerelease: false
