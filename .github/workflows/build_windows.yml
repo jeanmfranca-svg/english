@@ -47,15 +47,8 @@ jobs:
             }
           "
 
-      - name: Build Frontend Export
-        shell: bash
-        run: |
-          if [ -d "app/agents" ]; then mv app/agents app/_agents_bak; fi
-          npm run build || npx next build
-          if [ -d "app/_agents_bak" ]; then mv app/_agents_bak app/agents; fi
-
       - name: Build Tauri Executable
-        run: npx tauri build
+        run: npx tauri build --no-bundle || npx tauri build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
