@@ -43,12 +43,12 @@ jobs:
               data.package.productName = 'EnglishTeacher';
               data.package.version = '1.0.0';
               fs.writeFileSync(file, JSON.stringify(data, null, 2));
-              console.log('Configuração atualizada com sucesso!');
+              console.log('Configuração atualizada!');
             }
           "
 
       - name: Build Tauri Executable
-        run: npx tauri build --no-bundle || npx tauri build
+        run: npx tauri build --config src-tauri/tauri.conf.json
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
