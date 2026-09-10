@@ -1,0 +1,6 @@
+assets/
+database/
+dist_modern/assets/
+dist_modern/database/
+node_modules/
+target/
