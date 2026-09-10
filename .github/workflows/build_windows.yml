@@ -31,13 +31,10 @@ jobs:
         run: npm install @tauri-apps/cli@latest --save-dev
 
       - name: Inject Tauri v2 Config
-        shell: bash
         run: |
-          CONFIG_FILE=$(find . -name "tauri.conf.json" -not -path "*/node_modules/*" | head -n 1)
-          echo "Atualizando: $CONFIG_FILE"
           node -e "
             const fs = require('fs');
-            const file = '$CONFIG_FILE';
+            const file = 'src-tauri/tauri.conf.json';
             if (fs.existsSync(file)) {
               const data = JSON.parse(fs.readFileSync(file, 'utf8'));
               data.productName = 'EnglishTeacher';
@@ -46,27 +43,22 @@ jobs:
               data.package.productName = 'EnglishTeacher';
               data.package.version = '1.0.0';
               fs.writeFileSync(file, JSON.stringify(data, null, 2));
-              console.log('Sucesso!');
+              console.log('Injeção concluída com sucesso!');
             }
           "
 
       - name: Build Frontend
-        shell: bash
-        run: |
-          npm run build -- --no-lint || npx next build || true
+        run: npm run build -- --no-lint
 
       - name: Build Tauri Executable
-        shell: bash
-        run: |
-          TAURI_DIR=$(find . -name "tauri.conf.json" -not -path "*/node_modules/*" | head -n 1 | xargs dirname | xargs dirname)
-          cd "$TAURI_DIR"
-          npx tauri build
+        run: npx tauri build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: EnglishTeacher-Windows-Setup
           path: |
-            **/src-tauri/target/release/bundle/nsis/*.exe
-            **/src-tauri/target/release/bundle/msi/*.msi
-            **/src-tauri/target/release/*.exe
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/*.exe
+            
