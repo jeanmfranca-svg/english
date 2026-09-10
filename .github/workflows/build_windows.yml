@@ -26,8 +26,11 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
-      - name: Install Node Dependencies
+      - name: Install Dependencies
         run: npm install
+
+      - name: Build Frontend Assets
+        run: npm run build
 
       - name: Build Desktop Executable & Create Release (Tauri v2)
         uses: tauri-apps/tauri-action@v0
@@ -36,6 +39,6 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'The English Teacher v2.0 Native Windows'
-          releaseBody: 'Instalador nativo Windows (.exe) com engine assíncrona em Rust, banco de dados SQLite3 local e 16.410 áudios Opus.'
+          releaseBody: 'Instalador nativo Windows (.exe) com engine em Rust e banco SQLite3 local.'
           releaseDraft: false
           prerelease: false
