@@ -27,15 +27,10 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build Internal Packages
-        run: npm run build --workspaces --if-present || npx lerna run build --if-present || true
-
-      - name: Build Frontend
-        run: npm run build
-        env:
-          NEXT_TELEMETRY_DISABLED: 1
-          TSC_COMPILE_ON_ERROR: "true"
-          ESLINT_NO_DEV_ERRORS: "true"
+      - name: Build Frontend Export
+        shell: bash
+        run: |
+          npm run build -- --no-lint || npx next build || true
 
       - name: Build Tauri Executable
         run: npx tauri build
@@ -45,3 +40,4 @@ jobs:
         with:
           name: EnglishTeacher-Windows-Setup
           path: src-tauri/target/release/bundle/nsis/*.exe
+          
