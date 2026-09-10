@@ -27,11 +27,14 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Inject Tauri Config Parameters
+      - name: Install Tauri CLI
+        run: npm install @tauri-apps/cli@latest --save-dev
+
+      - name: Inject Tauri v2 Config
         shell: bash
         run: |
           CONFIG_FILE=$(find . -name "tauri.conf.json" -not -path "*/node_modules/*" | head -n 1)
-          echo "Atualizando arquivo: $CONFIG_FILE"
+          echo "Atualizando: $CONFIG_FILE"
           node -e "
             const fs = require('fs');
             const file = '$CONFIG_FILE';
@@ -39,8 +42,11 @@ jobs:
               const data = JSON.parse(fs.readFileSync(file, 'utf8'));
               data.productName = 'EnglishTeacher';
               data.version = '1.0.0';
+              if (!data.package) data.package = {};
+              data.package.productName = 'EnglishTeacher';
+              data.package.version = '1.0.0';
               fs.writeFileSync(file, JSON.stringify(data, null, 2));
-              console.log('tauri.conf.json atualizado com sucesso.');
+              console.log('Sucesso!');
             }
           "
 
@@ -49,22 +55,18 @@ jobs:
         run: |
           npm run build -- --no-lint || npx next build || true
 
-      - name: Build Tauri App
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          projectPath: '.'
-          tagName: v1.0.0
-          releaseName: 'English Teacher v1.0.0'
-          releaseBody: 'Instalador nativo para Windows (.exe)'
-          releaseDraft: false
-          prerelease: false
+      - name: Build Tauri Executable
+        shell: bash
+        run: |
+          TAURI_DIR=$(find . -name "tauri.conf.json" -not -path "*/node_modules/*" | head -n 1 | xargs dirname | xargs dirname)
+          cd "$TAURI_DIR"
+          npx tauri build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: EnglishTeacher-Windows-Setup
           path: |
-            src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/msi/*.msi
+            **/src-tauri/target/release/bundle/nsis/*.exe
+            **/src-tauri/target/release/bundle/msi/*.msi
+            **/src-tauri/target/release/*.exe
