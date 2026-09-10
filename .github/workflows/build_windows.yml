@@ -43,17 +43,16 @@ jobs:
               data.package.productName = 'EnglishTeacher';
               data.package.version = '1.0.0';
               fs.writeFileSync(file, JSON.stringify(data, null, 2));
-              console.log('Configuração atualizada!');
+              console.log('Configuração atualizada com sucesso!');
             }
           "
 
       - name: Build Frontend Export
-        env:
-          NEXT_TELEMETRY_DISABLED: 1
-          TSC_COMPILE_ON_ERROR: "true"
-          ESLINT_NO_DEV_ERRORS: "true"
+        shell: bash
         run: |
-          npm run build -- --no-lint || npx next build || echo "Ignorando erros do Next.js e prosseguindo para o Tauri"
+          if [ -d "app/agents" ]; then mv app/agents app/_agents_bak; fi
+          npm run build || npx next build
+          if [ -d "app/_agents_bak" ]; then mv app/_agents_bak app/agents; fi
 
       - name: Build Tauri Executable
         run: npx tauri build
