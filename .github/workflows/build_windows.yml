@@ -36,10 +36,18 @@ jobs:
           npm run build -- --no-lint || npx next build || true
 
       - name: Build Tauri Executable
-        run: npx tauri build
+        shell: bash
+        run: |
+          # Procurar a pasta onde tauri.conf.json reside e executar o build lá
+          TAURI_DIR=$(find . -name "tauri.conf.json" -not -path "*/node_modules/*" | head -n 1 | xargs dirname | xargs dirname)
+          echo "Pasta do projeto Tauri encontrada em: $TAURI_DIR"
+          cd "$TAURI_DIR"
+          npx tauri build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: EnglishTeacher-Windows-Setup
-          path: src-tauri/target/release/bundle/nsis/*.exe
+          path: |
+            **/src-tauri/target/release/bundle/nsis/*.exe
+            **/src-tauri/target/release/bundle/msi/*.msi
