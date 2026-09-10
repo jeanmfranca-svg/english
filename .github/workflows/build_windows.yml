@@ -27,6 +27,23 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Inject Tauri Config Parameters
+        shell: bash
+        run: |
+          CONFIG_FILE=$(find . -name "tauri.conf.json" -not -path "*/node_modules/*" | head -n 1)
+          echo "Atualizando arquivo: $CONFIG_FILE"
+          node -e "
+            const fs = require('fs');
+            const file = '$CONFIG_FILE';
+            if (fs.existsSync(file)) {
+              const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+              data.productName = 'EnglishTeacher';
+              data.version = '1.0.0';
+              fs.writeFileSync(file, JSON.stringify(data, null, 2));
+              console.log('tauri.conf.json atualizado com sucesso.');
+            }
+          "
+
       - name: Build Frontend
         shell: bash
         run: |
