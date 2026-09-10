@@ -1,0 +1,41 @@
+name: Release Windows Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Desktop Executable & Create Release (Tauri v2)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'The English Teacher v2.0 Native Windows'
+          releaseBody: 'Instalador nativo Windows (.exe) com engine assíncrona em Rust, banco de dados SQLite3 local e 16.410 áudios Opus transcodificados.'
+          releaseDraft: false
+          prerelease: false
